@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="description" content="Interactive 3D Rubik's Cube with a step-by-step solve guide, speedcubing timer and a two-phase AI solver.">
+    <title>Interactive 3D Rubik's Cube</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%231a1a2e'/><g fill='none' stroke='%234fc3f7' stroke-width='2'><rect x='6' y='6' width='20' height='20' rx='2'/><path d='M6 13h20M6 19h20M13 6v20M19 6v20'/></g></svg>">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <canvas id="confetti" aria-hidden="true"></canvas>
+
+    <button id="guide-toggle" aria-expanded="false" aria-controls="guide-panel">📖 Guide</button>
+
+    <div id="guide-panel" role="region" aria-label="Solve guide">
+        <h3>🧩 Solve Guide</h3>
+        <div id="step-list"></div>
+        <div class="progress-bar"><div class="fill" id="guide-progress" style="width:0%"></div></div>
+
+        <div class="guide-section" id="guide-hint-section" style="display:none">
+            <h4>Current Step</h4>
+            <div class="guide-text" id="guide-hint-text"></div>
+            <div id="guide-algorithms"></div>
+            <div class="hint-btn-row">
+                <button class="primary" id="btn-hint">💡 Highlight</button>
+                <button id="btn-autoplay">▶️ Play it</button>
+            </div>
+        </div>
+
+        <div class="guide-section">
+            <h4>Keyboard</h4>
+            <div class="guide-text">
+                <code>R L U D F B</code> — face turns<br>
+                <code>M E S</code> — slice turns<br>
+                <code>X Y Z</code> — rotate the whole cube<br>
+                <code>Shift</code> + key — counter-clockwise<br>
+                <code>Space</code> — scramble &nbsp;|&nbsp; <code>Z</code> — undo<br>
+                <code>H</code> — this guide &nbsp;|&nbsp; <code>Esc</code> — close
+            </div>
+        </div>
+        <div class="guide-section">
+            <h4>Method</h4>
+            <div class="guide-text">
+                Layer by layer: first layer on the <b>bottom</b>, last layer on
+                <b>top</b>. Every algorithm here is written for that hold.
+            </div>
+        </div>
+    </div>
+
+    <div id="solver-panel" role="region" aria-label="Solution">
+        <div class="solver-header">
+            <span>🤖 AI Solver<br><b id="solution-length">0</b> moves</span>
+            <button id="btn-solver-close" aria-label="Close solver">✕</button>
+        </div>
+        <div class="solver-moves" id="solver-moves"></div>
+        <div class="solver-controls">
+            <button id="btn-solver-prev" aria-label="Previous move">⏮</button>
+            <button id="btn-solver-play">▶️ Play</button>
+            <button id="btn-solver-next" aria-label="Next move">⏭</button>
+        </div>
+        <div class="solver-progress"><div class="fill" id="solver-progress-fill" style="width:0%"></div></div>
+        <div class="solver-status" id="solver-status"></div>
+    </div>
+
+    <div id="times-panel" class="side-panel" role="region" aria-label="Session times">
+        <div class="panel-head">
+            <span>📊 Session</span>
+            <button id="btn-close-times" aria-label="Close session times">✕</button>
+        </div>
+        <div class="times-summary">
+            <div><span class="k">Best</span><span class="v" id="stat-best">—</span></div>
+            <div><span class="k">Ao5</span><span class="v" id="stat-ao5">—</span></div>
+            <div><span class="k">Ao12</span><span class="v" id="stat-ao12">—</span></div>
+            <div><span class="k">Solves</span><span class="v" id="stat-count">0</span></div>
+        </div>
+        <div class="times-list" id="times-list"></div>
+        <button id="btn-clear-session" class="wide">Clear session</button>
+    </div>
+
+    <div id="patterns-panel" class="side-panel" role="region" aria-label="Patterns">
+        <div class="panel-head">
+            <span>🎨 Patterns</span>
+            <button id="btn-close-patterns" aria-label="Close patterns">✕</button>
+        </div>
+        <div id="patterns-list"></div>
+        <div class="panel-note">Each pattern starts from a solved cube.</div>
+    </div>
+
+    <div id="info">
+        <h1>3D Rubik's Cube</h1>
+        <p>
+            🖱️ Drag a face to turn it &nbsp;|&nbsp; Right-drag to look around &nbsp;|&nbsp; Scroll to zoom<br>
+            ⌨️ <code>R L U D F B</code> to turn, <code>Shift</code> to reverse, <code>Space</code> to scramble
+        </p>
+    </div>
+
+    <div id="scramble-bar">
+        <span id="scramble-text"></span>
+        <button id="btn-copy-scramble" title="Copy the scramble">📋</button>
+        <button id="btn-share-scramble" title="Copy a link to this scramble">🔗</button>
+    </div>
+
+    <div id="stats">
+        <div class="label">Moves</div>
+        <div class="value" id="move-count">0</div>
+        <div class="label" style="margin-top:6px">Time</div>
+        <div class="value" id="timer">0.00</div>
+        <div class="label" style="margin-top:6px">Best</div>
+        <div class="value small" id="best-inline">—</div>
+    </div>
+
+    <div id="status" role="status" aria-live="polite"></div>
+    <div class="move-list" id="move-list"></div>
+
+    <div class="controls">
+        <button id="btn-scramble">🔀 Scramble</button>
+        <button id="btn-daily" title="Today's challenge — same scramble for everyone">📅 Daily</button>
+        <button id="btn-reset">🔄 Reset</button>
+        <button id="btn-undo" title="Undo (Z)">↩️</button>
+        <button id="btn-redo" title="Redo (Ctrl+Shift+Z)">↪️</button>
+        <button id="btn-timer" title="Pause or resume the timer">⏱</button>
+        <button id="btn-patterns">🎨 Patterns</button>
+        <button id="btn-times">📊 Times</button>
+        <button id="btn-sound" title="Sound on/off">🔊</button>
+        <button id="btn-solve" class="primary">🤖 Solve</button>
+    </div>
+
+    <div id="solved-banner">
+        <button id="btn-close-banner" class="banner-close" aria-label="Close">✕</button>
+        <h2>🎉 Solved!</h2>
+        <p id="solved-stats">0 moves</p>
+        <p id="solved-extra" class="extra"></p>
+        <button id="btn-play-again">Scramble again</button>
+    </div>
+
+    <noscript>
+        <div class="fallback">This cube needs JavaScript to run.</div>
+    </noscript>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <script>
+        // three.js comes from a CDN; say so plainly instead of showing a blank page
+        if (typeof THREE === 'undefined') {
+            document.body.insertAdjacentHTML('beforeend',
+                '<div class="fallback">Could not load three.js from the CDN. Check your connection and reload.</div>');
+        }
+    </script>
+    <script src="solver.js"></script>
+    <script src="cube.js"></script>
+</body>
+</html>
