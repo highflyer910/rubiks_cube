@@ -156,9 +156,9 @@ const FACE_DEF = {
     L: { axis: 'x', layer: -1, cw: 1 },
     F: { axis: 'z', layer: 1, cw: -1 },
     B: { axis: 'z', layer: -1, cw: 1 },
-    M: { axis: 'x', layer: 0, cw: 1 },   // middle slice, follows L
-    E: { axis: 'y', layer: 0, cw: 1 },   // equator slice, follows D
-    S: { axis: 'z', layer: 0, cw: -1 },  // standing slice, follows F
+    M: { axis: 'x', layer: 0, cw: 1 },   
+    E: { axis: 'y', layer: 0, cw: 1 },   
+    S: { axis: 'z', layer: 0, cw: -1 },  
     x: { axis: 'x', layer: 'all', cw: -1 },
     y: { axis: 'y', layer: 'all', cw: -1 },
     z: { axis: 'z', layer: 'all', cw: -1 }
@@ -229,7 +229,7 @@ let moveHistory = [];
 let redoStack = [];
 let moveCount = 0;
 let currentScramble = '';
-let assisted = false;      // solver/guide/pattern used since the last scramble
+let assisted = false;     
 let solvedShown = false;
 
 // moves the player is credited with (cube rotations and replays are not)
@@ -238,7 +238,7 @@ const COUNTED_SOURCES = new Set(['manual', 'keyboard']);
 // ===================== TIMER =====================
 let timerRunning = false;
 let timerStart = 0;
-let timerElapsed = 0;   // milliseconds
+let timerElapsed = 0;  
 let lastTimerText = '';
 
 function formatTime(ms) {
@@ -469,7 +469,6 @@ function _doRotate(axis, layer, angle, source, resolve) {
 // ===================== SOLVED =====================
 function onSolved(source) {
     if (solvedShown) return;
-    // an untouched cube sitting on the table is not an achievement
     if (moveCount === 0 && source !== 'solver' && source !== 'guide') return;
     solvedShown = true;
     pauseTimer();
@@ -643,7 +642,6 @@ window.addEventListener('keydown', (e) => {
     if (lower === 'z' && !e.ctrlKey && !e.metaKey) { e.preventDefault(); undoMove(); return; }
     if (key === '?' || (lower === 'h' && !e.ctrlKey)) { e.preventDefault(); toggleGuide(); return; }
     if (key === 'Escape') { dismissBanner(); return; }
-    // let Space activate a focused button rather than always scrambling
     if (key === ' ') {
         if (document.activeElement && document.activeElement.tagName === 'BUTTON') return;
         e.preventDefault();
