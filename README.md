@@ -1,6 +1,6 @@
 # 🎲 Interactive 3D Rubik's Cube
 
-A fully interactive, browser-based 3×3 Rubik's Cube with a solver, step-by-step guide, speedcubing timer, and classic puzzle patterns. Built with vanilla JavaScript and Three.js — no build step required.
+A fully interactive, browser-based 3×3 Rubik's Cube with a solver, step-by-step guide, speedcubing timer, and classic puzzle patterns. Built with vanilla JavaScript and Three.js
 
 [🔗 Live Demo](https://rubiks-cube-black.vercel.app/) 
 
@@ -49,8 +49,8 @@ A fully interactive, browser-based 3×3 Rubik's Cube with a solver, step-by-step
 
 The solver implements **Kociemba's Two-Phase Algorithm**:
 
-1. **Phase 1** — Search into the subgroup `<U, D, R2, L2, F2, B2>` using coordinate-based IDA* with paired pruning tables (twist×slice, flip×slice).
-2. **Phase 2** — Complete the solve with only half-turns for the side faces, using corner-perm×slice and edge-perm×slice pruning.
+1. **Phase 1**: Search into the subgroup `<U, D, R2, L2, F2, B2>` using coordinate-based IDA* with paired pruning tables (twist×slice, flip×slice).
+2. **Phase 2**: Complete the solve with only half-turns for the side faces, using corner-perm×slice and edge-perm×slice pruning.
 
 Transition tables and pruning tables are built lazily on first run (~1 second). The solver is packaged as a self-contained module (`Solver`) that can also be used standalone or from Node.js.
 
